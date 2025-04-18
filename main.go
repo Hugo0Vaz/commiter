@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,6 +15,9 @@ import (
 )
 
 func main() {
+	outputFlag := flag.String("output", "text", "Output format: json or text")
+	langFlag := flag.String("lang", "pt-br", "Language for analysis (pt-br or en)")
+	flag.Parse()
 	if !isGitRepository() {
 		fmt.Println("Error: Current directory is not a git repository")
 		os.Exit(1)
@@ -27,12 +32,21 @@ func main() {
 		os.Exit(0)
 	}
 
-	analysis, err := getAIAnalysis(diff)
+	analysis, err := getAIAnalysis(diff, *langFlag)
 	if err != nil {
 		log.Fatalf("Error getting AI analysis: %v", err)
 	}
 
-	fmt.Println(analysis)
+	if *outputFlag == "json" {
+		result := map[string]string{"analysis": analysis}
+		jsonBytes, err := json.Marshal(result)
+		if err != nil {
+			log.Fatalf("Error creating JSON output: %v", err)
+		}
+		fmt.Println(string(jsonBytes))
+	} else {
+		fmt.Println(analysis)
+	}
 }
 
 func isGitRepository() bool {
@@ -51,14 +65,27 @@ func getStagedDiff() (string, error) {
 	return strings.TrimSpace(out.String()), nil
 }
 
-func getAIAnalysis(diff string) (string, error) {
+func getAIAnalysis(diff string, lang string) (string, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		return "", fmt.Errorf("OPENAI_API_KEY environment variable not set")
 	}
 
 	client := openai.NewClient(apiKey)
-	prompt := fmt.Sprintf(`Analise esse diff do git e forneça uma mensagem de confirmação curta e descritiva e outra mais longa e detalhada.
+	var prompt string
+	if lang == "en" {
+		prompt = fmt.Sprintf(`Analyze this git diff and provide a short and descriptive commit message and also a longer, detailed one.
+
+The output should follow this template: 
+
+(action)[file or system part]: short description.
+
+	Longer and more detailed description here 
+
+Diff:
+%s`, diff)
+	} else {
+		prompt = fmt.Sprintf(`Analise esse diff do git e forneça uma mensagem de confirmação curta e descritiva e outra mais longa e detalhada.
 
 A saída deve seguir este modelo: 
 
@@ -68,6 +95,7 @@ A saída deve seguir este modelo:
 
 Diff:
 %s`, diff)
+	}
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
