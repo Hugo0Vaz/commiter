@@ -1,9 +1,5 @@
 package main
 
-import "fmt"
-
-package main
-
 import (
 	"bytes"
 	"context"
@@ -36,7 +32,6 @@ func main() {
 		log.Fatalf("Error getting AI analysis: %v", err)
 	}
 
-	fmt.Println("\nAI Analysis:")
 	fmt.Println(analysis)
 }
 
@@ -63,10 +58,13 @@ func getAIAnalysis(diff string) (string, error) {
 	}
 
 	client := openai.NewClient(apiKey)
-	prompt := fmt.Sprintf(`Analyze this git diff and provide:
-1. A brief summary of the changes
-2. Potential issues to check
-3. Suggestions for improvement
+	prompt := fmt.Sprintf(`Analise esse diff do git e forneça uma mensagem de confirmação curta e descritiva e outra mais longa e detalhada.
+
+A saída deve seguir este modelo: 
+
+(ação)[arquivo ou parte do sistema]: descrição curta.
+
+	Descrição longa e mais detalhada aqui 
 
 Diff:
 %s`, diff)
