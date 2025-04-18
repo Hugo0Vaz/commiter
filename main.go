@@ -38,7 +38,13 @@ func main() {
 	}
 
 	if *outputFlag == "json" {
-		result := map[string]string{"analysis": analysis}
+		parts := strings.SplitN(analysis, "\n\n", 2)
+		shortPart := parts[0]
+		longPart := ""
+		if len(parts) > 1 {
+			longPart = parts[1]
+		}
+		result := map[string]string{"short": shortPart, "long": longPart}
 		jsonBytes, err := json.Marshal(result)
 		if err != nil {
 			log.Fatalf("Error creating JSON output: %v", err)
