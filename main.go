@@ -50,6 +50,14 @@ func main() {
 			log.Fatalf("Error creating JSON output: %v", err)
 		}
 		fmt.Println(string(jsonBytes))
+	} else if *outputFlag == "cmd" {
+		parts := strings.SplitN(analysis, "\n\n", 2)
+		shortPart := parts[0]
+		longPart := ""
+		if len(parts) > 1 {
+			longPart = parts[1]
+		}
+		fmt.Printf("commit -m \"%s\" -m \"%s\"\n", shortPart, longPart)
 	} else {
 		fmt.Println(analysis)
 	}
