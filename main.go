@@ -57,7 +57,7 @@ func main() {
 		if len(parts) > 1 {
 			longPart = parts[1]
 		}
-		fmt.Printf("commit -m \"%s\" -m \"%s\"\n", shortPart, longPart)
+		fmt.Printf("git commit -m \"%s\" -m \"%s\"\n", shortPart, longPart)
 	} else {
 		fmt.Println(analysis)
 	}
