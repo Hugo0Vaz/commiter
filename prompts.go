@@ -3,13 +3,13 @@ package main
 import "fmt"
 
 func englishPrompt(diff string) string {
-	return fmt.Sprintf(`Using the commit message format delimited in triple quotes and the code diff provided in the end of the prompt analyze and generate a commit massage in the same format.
+	return fmt.Sprintf(`Using the following commit message format and the code diff provided in the end of the prompt analyze and generate a commit massage in the same format.
 
-"""
-(<type>)[optional scope]: <description>
+(<type>)[scope]: <description>\n<detailed description>
 
-[optional body (Longer description) ]
-"""
+The <description> should be a short and informative description of the changes.
+
+The <detailed description> should be longer and more descriptive of the changes.
 
 the commit <types> available are as follows in the table:
 
@@ -32,13 +32,9 @@ Diff:
 }
 
 func portuguesePrompt(diff string) string {
-	return fmt.Sprintf(`Usando o formato de mensagem delimitado por aspas triplas e a diferença de código fornecida no final do prompt, analise e gere uma mensagem de confirmação no mesmo formato.
+	return fmt.Sprintf(`Usando o formato de mensagem a seguir e o diff de código fornecida no final do prompt, analise e gere uma mensagem de confirmação no mesmo formato.
 
-“”"
-<type>[escopo opcional]: <description>
-
-[optional body (Longer description) ]
-"""
+(<type>)[escopo]: <description>\n[ longer description ]
 
 Os <types> de commit disponíveis são os seguintes na tabela:
 
