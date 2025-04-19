@@ -27,17 +27,34 @@ the commit <types> available are as follows in the table:
 |'chore'|Chores|Other changes that don't modify src or test files|♻️|
 |'revert'|Reverts|Reverts a previous commit|🗑|
 
+Diff:
 %s`, diff)
 }
 
 func portuguesePrompt(diff string) string {
-	return fmt.Sprintf(`Analise esse diff do git e forneça uma mensagem de confirmação curta e descritiva e outra mais longa e detalhada.
+	return fmt.Sprintf(`Usando o formato de mensagem delimitado por aspas triplas e a diferença de código fornecida no final do prompt, analise e gere uma mensagem de confirmação no mesmo formato.
 
-A saída deve seguir este modelo: 
+“”"
+<type>[escopo opcional]: <description>
 
-(ação)[arquivo ou parte do sistema]: descrição curta.
+[optional body (Longer description) ]
+"""
 
-	Descrição longa e mais detalhada aqui 
+Os <types> de commit disponíveis são os seguintes na tabela:
+
+|Commit Type|Title|Description|Emoji|
+|---|---|---|:-:|
+|'feat'|Features|A new feature|✨|
+|'fix'|Bug Fixes|A bug Fix|🐛|
+|'docs'|Documentation|Documentation only changes|📚|
+|'style'|Styles|Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)|💎|
+|'refactor'|Code Refactoring|A code change that neither fixes a bug nor adds a feature|📦|
+|'perf'|Performance Improvements|A code change that improves performance|🚀|
+|'test'|Tests|Adding missing tests or correcting existing tests|🚨|
+|'build'|Builds|Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)|🛠|
+|'ci'|Continuous Integrations|Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)|⚙️|
+|'chore'|Chores|Other changes that don't modify src or test files|♻️|
+|'revert'|Reverts|Reverts a previous commit|🗑|
 
 Diff:
 %s`, diff)
