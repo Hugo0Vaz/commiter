@@ -59,7 +59,17 @@ func main() {
 		}
 		fmt.Printf("git commit -m \"%s\" -m \"%s\"\n", shortPart, longPart)
 	} else {
-		fmt.Println(analysis)
+		parts := strings.SplitN(analysis, "\n\n", 2)
+		shortPart := parts[0]
+		longPart := ""
+		if len(parts) > 1 {
+			longPart = parts[1]
+		}
+		cmd := exec.Command("git", "commit", "-m", shortPart, "-m", longPart)
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("Error committing changes: %v", err)
+		}
+		fmt.Println("Committed!")
 	}
 }
 
