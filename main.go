@@ -134,7 +134,7 @@ func getFileStagedDiff(filename string) (string, error) {
 }
 
 func processAnalysis(analysis, outputFormat string, yFlag bool, file string) {
-	parts := strings.SplitN(analysis, "\n\n", 2)
+	parts := strings.SplitN(analysis, "\n", 2)
 	shortPart := parts[0]
 	longPart := ""
 	if len(parts) > 1 {
