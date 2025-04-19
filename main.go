@@ -17,6 +17,7 @@ import (
 func main() {
 	outputFlag := flag.String("output", "text", "Output format: json or text")
 	langFlag := flag.String("lang", "pt-br", "Language for analysis (pt-br or en)")
+	yFlag := flag.Bool("y", false, "Automatically commit without confirmation")
 	flag.Parse()
 	if !isGitRepository() {
 		fmt.Println("Error: Current directory is not a git repository")
@@ -64,6 +65,18 @@ func main() {
 		longPart := ""
 		if len(parts) > 1 {
 			longPart = parts[1]
+		}
+		if !*yFlag {
+			fmt.Println("Commit message preview:")
+			fmt.Printf("Short: %s\n", shortPart)
+			fmt.Printf("Long: %s\n", longPart)
+			fmt.Print("Do you want to commit? [y/N]: ")
+			var response string
+			fmt.Scanln(&response)
+			if strings.ToLower(strings.TrimSpace(response)) != "y" {
+				fmt.Println("Commit aborted.")
+				os.Exit(0)
+			}
 		}
 		cmd := exec.Command("git", "commit", "-m", shortPart, "-m", longPart)
 		if err := cmd.Run(); err != nil {
