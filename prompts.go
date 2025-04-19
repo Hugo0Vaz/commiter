@@ -34,7 +34,11 @@ Diff:
 func portuguesePrompt(diff string) string {
 	return fmt.Sprintf(`Usando o formato de mensagem a seguir e o diff de código fornecida no final do prompt, analise e gere uma mensagem de confirmação no mesmo formato.
 
-(<type>)[escopo]: <description>\n[ longer description ]
+(<type>)[escopo]: <description>\n<longer description>
+
+A <description> deve ser curta e informativa.
+
+A <longer description> deve ser mais longa e mais descritiva das mudanças
 
 Os <types> de commit disponíveis são os seguintes na tabela:
 
