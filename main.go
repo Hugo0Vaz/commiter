@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	// "encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -17,63 +17,38 @@ import (
 func main() {
 	outputFlag := flag.String("output", "text", "Output format: json or text")
 	langFlag := flag.String("lang", "pt-br", "Language for analysis (pt-br or en)")
-	yFlag := flag.Bool("y", false, "Automatically commit without confirmation")
 	flag.Parse()
+
 	if !isGitRepository() {
 		fmt.Println("Error: Current directory is not a git repository")
 		os.Exit(1)
 	}
 
-	args := flag.Args()
-	allSubcommand := false
-	if len(args) > 0 && args[0] == "all" {
-		allSubcommand = true
+	diff, err := getStagedDiff()
+	if err != nil {
+		log.Fatalf("Error getting git diff: %v", err)
+	}
+	
+	if diff == "" {
+		fmt.Println("No staged changes to analyze")
+		os.Exit(0)
+	}
+	
+	analysis, err := getAIAnalysis(diff, *langFlag)
+	if err != nil {
+		log.Fatalf("Error getting AI analysis: %v", err)
 	}
 
-	if allSubcommand {
-		diff, err := getStagedDiff()
-		if err != nil {
-			log.Fatalf("Error getting git diff: %v", err)
-		}
-		if diff == "" {
-			fmt.Println("No staged changes to analyze")
-			os.Exit(0)
-		}
-		analysis, err := getAIAnalysis(diff, *langFlag)
-		if err != nil {
-			log.Fatalf("Error getting AI analysis: %v", err)
-		}
-		processAnalysis(analysis, *outputFlag, *yFlag, "")
-	} else {
-		// Process each staged file individually
-		cmdFiles := exec.Command("git", "diff", "--cached", "--name-only")
-		var out bytes.Buffer
-		cmdFiles.Stdout = &out
-		if err := cmdFiles.Run(); err != nil {
-			log.Fatalf("Error getting staged files: %v", err)
-		}
-		files := strings.Split(strings.TrimSpace(out.String()), "\n")
-		if len(files) == 0 || files[0] == "" {
-			fmt.Println("No staged changes to analyze")
-			os.Exit(0)
-		}
-		for _, file := range files {
-			diff, err := getFileStagedDiff(file)
-			if err != nil {
-				log.Fatalf("Error getting staged diff for %s: %v", file, err)
-			}
-			if diff == "" {
-				continue
-			}
-			analysis, err := getAIAnalysis(diff, *langFlag)
-			if err != nil {
-				log.Fatalf("Error getting AI analysis for %s: %v", file, err)
-			}
-			processAnalysis(analysis, *outputFlag, *yFlag, file)
-		}
+	output, err := generateOutput(analysis, *outputFlag)
+	if err != nil {
+		log.Fatalf("Error generating output: %v", err)
 	}
+
+	fmt.Println(output)
+	os.Exit(0)
 }
 
+// Returns if the CWD is a git repository
 func isGitRepository() bool {
 	cmd := exec.Command("git", "rev-parse", "--is-inside-work-tree")
 	return cmd.Run() == nil
@@ -107,7 +82,7 @@ func getAIAnalysis(diff string, lang string) (string, error) {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: openai.GPT4o,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
@@ -122,6 +97,7 @@ func getAIAnalysis(diff string, lang string) (string, error) {
 
 	return resp.Choices[0].Message.Content, nil
 }
+
 func getFileStagedDiff(filename string) (string, error) {
 	var out bytes.Buffer
 	cmd := exec.Command("git", "diff", "--cached", "--", filename)
@@ -133,52 +109,10 @@ func getFileStagedDiff(filename string) (string, error) {
 	return strings.TrimSpace(out.String()), nil
 }
 
-func processAnalysis(analysis, outputFormat string, yFlag bool, file string) {
-	parts := strings.SplitN(analysis, "\n", 2)
-	shortPart := parts[0]
-	longPart := ""
-	if len(parts) > 1 {
-		longPart = parts[1]
-	}
-	if outputFormat == "json" {
-		result := map[string]string{"short": shortPart, "long": longPart}
-		jsonBytes, err := json.Marshal(result)
-		if err != nil {
-			log.Fatalf("Error creating JSON output: %v", err)
-		}
-		fmt.Println(string(jsonBytes))
-	} else if outputFormat == "cmd" {
-		if file != "" {
-			fmt.Printf("git commit -m \"%s\" -m \"%s\" -- %s\n", shortPart, longPart, file)
-		} else {
-			fmt.Printf("git commit -m \"%s\" -m \"%s\"\n", shortPart, longPart)
-		}
+func generateOutput(output string, output_type string) (string, error) {
+	if output_type == "text" {
+		return output, nil
 	} else {
-		if !yFlag {
-			fmt.Println("Commit message preview:")
-			fmt.Printf("Short: %s\n", shortPart)
-			fmt.Printf("Long: %s\n", longPart)
-			fmt.Print("Do you want to commit? [y/N]: ")
-			var response string
-			fmt.Scanln(&response)
-			if strings.ToLower(strings.TrimSpace(response)) != "y" {
-				fmt.Println("Commit aborted.")
-				return
-			}
-		}
-		var cmd *exec.Cmd
-		if file != "" {
-			cmd = exec.Command("git", "commit", "-m", shortPart, "-m", longPart, "--", file)
-		} else {
-			cmd = exec.Command("git", "commit", "-m", shortPart, "-m", longPart)
-		}
-		if err := cmd.Run(); err != nil {
-			log.Fatalf("Error committing %s: %v", file, err)
-		}
-		if file != "" {
-			fmt.Println("Committed", file)
-		} else {
-			fmt.Println("Committed!")
-		}
+		return "", nil
 	}
 }

@@ -1,10 +1,5 @@
-package main
+# English Prompt
 
-import "fmt"
-
-func englishPrompt(diff string) string {
-	return fmt.Sprintf(
-`
 You are an expert software engineer and technical writer.
 
 Your task is to generate a git commit message using the **Conventional Commits** specification
@@ -60,22 +55,16 @@ You will receive:
    - Add explanations outside the commit message
 
 9. If the change is purely mechanical (renames, formatting, linting):
-   - Use 'refactor' or 'chore', whichever is more accurate
+   - Use `refactor` or `chore`, whichever is more accurate
 
 10. If the change improves performance measurably:
-    - Use 'perf'
+    - Use `perf`
 
 ### Output
 Return **only** the final commit message text.
 
-### Diff
-%s
-`, diff)
-}
+# Prompt Portugues
 
-func portuguesePrompt(diff string) string {
-	return fmt.Sprintf(
-`
 Você é um engenheiro de software experiente e redator técnico.
 
 Sua tarefa é gerar uma mensagem de commit Git usando a especificação
@@ -131,15 +120,11 @@ Você receberá:
    - Adicione explicações fora da mensagem de commit
 
 9. Se a alteração for puramente mecânica (renomeações, formatação, lint):
-   - Use 'refactor' ou 'chore', conforme mais apropriado
+   - Use `refactor` ou `chore`, conforme mais apropriado
 
 10. Se a alteração melhorar o desempenho de forma mensurável:
-    - Use 'perf'
+    - Use `perf`
 
 ### Saída
 Retorne **apenas** o texto final da mensagem de commit.
 
-### Diff
-%s
-`, diff)
-}
