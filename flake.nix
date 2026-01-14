@@ -1,5 +1,5 @@
 {
-  description = "Go development environment";
+  description = "AI-powered git commit message generator";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -36,6 +36,29 @@
         ];
       in
       {
+        packages.default = pkgs.buildGoModule {
+          pname = "commiter";
+          version = "0.1.0";
+
+          src = ./.;
+
+          # Hash of Go dependencies
+          vendorHash = "sha256-VdamvrQradI+nkdmrEpTnLlznTp3qnEbkSzqObuZ9jE=";
+
+          meta = with pkgs.lib; {
+            description = "AI-powered git commit message generator using OpenAI";
+            homepage = "https://github.com/Hugo0Vaz/commiter";
+            license = licenses.mit;
+            maintainers = [ ];
+            mainProgram = "commiter";
+          };
+        };
+
+        apps.default = {
+          type = "app";
+          program = "${self.packages.${system}.default}/bin/commiter";
+        };
+
         devShells.default = pkgs.mkShell {
           name = "go-dev-env";
 
